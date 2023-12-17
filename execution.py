@@ -215,6 +215,9 @@ def recursive_will_execute(prompt, outputs, current_item):
 def recursive_output_delete_if_changed(prompt, old_prompt, outputs, current_item):
     unique_id = current_item
     inputs = prompt[unique_id]['inputs']
+    if 'class_type' not in prompt[unique_id]:
+        logging.error(f"Missing 'class_type' for unique_id {unique_id}")
+        return
     class_type = prompt[unique_id]['class_type']
     class_def = nodes.NODE_CLASS_MAPPINGS[class_type]
 
@@ -594,7 +597,20 @@ def full_type_name(klass):
 
 def validate_prompt(prompt):
     outputs = set()
+    errors = []  # Add this line to initialize the 'errors' variable
     for x in prompt:
+        if 'class_type' not in prompt[x]:
+            error = {
+                "type": "prompt_missing_class_type",
+                "message": "Prompt is missing 'class_type' key",
+                "details": f"Prompt for node '{x}' is missing 'class_type' key",
+                "extra_info": {
+                    "node_name": x
+                }
+            }
+            errors.append(error)
+            continue
+
         class_ = nodes.NODE_CLASS_MAPPINGS[prompt[x]['class_type']]
         if hasattr(class_, 'OUTPUT_NODE') and class_.OUTPUT_NODE == True:
             outputs.add(x)
@@ -609,7 +625,6 @@ def validate_prompt(prompt):
         return (False, error, [], [])
 
     good_outputs = set()
-    errors = []
     node_errors = {}
     validated = {}
     for o in outputs:
