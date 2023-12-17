@@ -15,3 +15,7 @@ venv/
 !/web/extensions/logging.js.example
 !/web/extensions/core/
 /tests-ui/data/object_info.json
+.DS_Store
+comfyui.log
+comfyui.*.log
+pysssss-workflows/*.json
